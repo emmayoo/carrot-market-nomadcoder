@@ -1,5 +1,6 @@
 interface FormInputProps {
   type?: string;
+  name: string;
   placeholder: string;
   required: boolean;
   errors: string[];
@@ -7,6 +8,7 @@ interface FormInputProps {
 
 export default function FormInput({
   type = "text",
+  name,
   placeholder,
   required,
   errors,
@@ -16,6 +18,7 @@ export default function FormInput({
       <input
         className="bg-transparent rounded-md w-full h-10 p-3 focus:outline-none ring-2 focus:ring-4 transition ring-neutral-200 focus:ring-orange-500 border-none placeholder:text-neutral-400"
         type={type}
+        name={name}
         placeholder={placeholder}
         required={required}
       />

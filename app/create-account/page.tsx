@@ -10,16 +10,29 @@ export default function CreateAccount() {
         <h2 className="text-xl">Fill in the form below to join!</h2>
       </div>
       <form className="flex flex-col gap-3">
-        <FormInput placeholder="Username" required errors={[]} />
-        <FormInput type="email" placeholder="Email" required errors={[]} />
+        <FormInput
+          name="username"
+          placeholder="Username"
+          required
+          errors={[]}
+        />
+        <FormInput
+          type="email"
+          name="email"
+          placeholder="Email"
+          required
+          errors={[]}
+        />
         <FormInput
           type="password"
+          name="password"
           placeholder="Password"
           required
           errors={[]}
         />
         <FormInput
           type="password"
+          name="password2"
           placeholder="Confirm Password"
           required
           errors={[]}
