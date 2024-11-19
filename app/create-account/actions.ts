@@ -64,4 +64,5 @@ export const createAccount = async (prevState: any, formData: FormData) => {
   if (!result.success) {
     return result.error.flatten(); // Error를 깔끔하게 보여줌
   }
+  return prevState;
 };
