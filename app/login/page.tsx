@@ -4,10 +4,10 @@ import Button from "@/components/button";
 import Input from "@/components/input";
 import SocialLogin from "@/components/social-login";
 import { useActionState } from "react";
-import { handleForm } from "./actions";
+import { logIn } from "./actions";
 
 export default function LogIn() {
-  const [state, action] = useActionState(handleForm, null);
+  const [state, action] = useActionState(logIn, null);
   return (
     <div className="flex flex-col gap-10 py-8 px-6">
       <div className="flex flex-col gap-2 *:font-medium">
@@ -20,14 +20,14 @@ export default function LogIn() {
           name="email"
           placeholder="Email"
           required
-          errors={state?.errors ?? []}
+          errors={state?.fieldErrors.email}
         />
         <Input
           type="password"
           name="password"
           placeholder="Password"
           required
-          errors={[]}
+          errors={state?.fieldErrors.password}
         />
         <Button text="Log in" />
       </form>
