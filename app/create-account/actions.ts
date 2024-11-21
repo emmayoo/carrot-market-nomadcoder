@@ -4,7 +4,7 @@ import db from "@/lib/db";
 import getSession from "@/lib/session";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { typeToFlattenedError, z } from "zod";
 
 import {
   PASSWORD_MIN_LENGTH,
@@ -94,8 +94,16 @@ const formSchema = z
     path: ["confirm_password"], // path 미설정 시, formErrors
   });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const createAccount = async (prevState: any, formData: FormData) => {
+type Form = z.infer<typeof formSchema>;
+
+type StateType = {
+  fieldErrors: typeToFlattenedError<Form>["fieldErrors"];
+};
+
+export const createAccount = async (
+  prevState: StateType | null,
+  formData: FormData
+) => {
   const data = {
     username: formData.get("username"),
     email: formData.get("email"),

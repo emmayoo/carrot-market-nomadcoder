@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import db from "@/lib/db";
 import getSession from "@/lib/session";
 
-import { z } from "zod";
+import { typeToFlattenedError, z } from "zod";
 import { redirect } from "next/navigation";
 
 import {
@@ -12,6 +12,13 @@ import {
   PASSWORD_REGEX,
   PASSWORD_REGEX_ERROR,
 } from "@/lib/constants";
+
+type StateType = {
+  fieldErrors?: typeToFlattenedError<
+    { email: string; password: string },
+    string
+  >["fieldErrors"];
+};
 
 const checkEmailExist = async (email: string) => {
   const user = await db.user.findUnique({
@@ -35,8 +42,7 @@ const formSchema = z.object({
     .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function logIn(prevState: any, formData: FormData) {
+export async function logIn(prevState: StateType | null, formData: FormData) {
   const data = {
     email: formData.get("email"),
     password: formData.get("password"),
