@@ -1,15 +1,15 @@
-import getSession from "./lib/session";
-
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  console.log(request.url);
+  const pathname = request.nextUrl.pathname;
 
-  const session = await getSession();
-  console.log(session);
-
-  if (request.nextUrl.pathname === "/profile") {
-    console.log(request.cookies.getAll);
-    return Response.redirect(new URL("/", request.url));
+  if (pathname === "/") {
+    const response = NextResponse.next();
+    request.cookies.set("middleware-cookie", "test");
+    return response;
   }
 }
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+};
