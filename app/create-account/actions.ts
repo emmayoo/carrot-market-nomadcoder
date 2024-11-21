@@ -1,5 +1,11 @@
 "use server";
 import { z } from "zod";
+import db from "@/lib/db";
+import bcrypt from "bcrypt";
+
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { getIronSession, SessionOptions } from "iron-session";
 
 import {
   PASSWORD_MIN_LENGTH,
@@ -8,6 +14,26 @@ import {
 } from "@/lib/constants";
 
 const checkUsername = (username: string) => !username.includes("potato");
+const checkUsernameUnique = async (username: string) => {
+  const user = await db.user.findUnique({
+    where: {
+      username,
+    },
+    select: {
+      id: true,
+    },
+  });
+  return !user;
+};
+
+const checkEmailUnique = async (email: string) => {
+  const user = await db.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+  return !user;
+};
+
 const checkPasswords = ({
   password,
   confirm_password,
@@ -15,6 +41,7 @@ const checkPasswords = ({
   password: string;
   confirm_password: string;
 }) => password === confirm_password;
+
 // const usernameSchema = z.string().min(3).max(10);
 const formSchema = z
   .object({
@@ -29,8 +56,15 @@ const formSchema = z
       // .toLowerCase()
       // .optional(),
       // .transform((username:string) => username.replace("potato", ""))
-      .refine(checkUsername, "No potato allowed"),
-    email: z.string().email(),
+      .refine(checkUsername, "No potato allowed")
+      .refine(checkUsernameUnique, "This username is already taken."),
+    email: z
+      .string()
+      .email()
+      .refine(
+        checkEmailUnique,
+        "There is an account already registered with that email."
+      ),
     password: z
       .string()
       .min(PASSWORD_MIN_LENGTH)
@@ -58,10 +92,38 @@ export const createAccount = async (prevState: any, formData: FormData) => {
   // } catch (e) {
   // 	console.log(e);
   // }
-  const result = formSchema.safeParse(data); // Error 발생하지 않음
+
+  // const result = await formSchema.safeParseAsync(data); // Error 발생하지 않음 + async/await
+  const result = await formSchema.spa(data); // spa: safeParseAsync 약자
 
   if (!result.success) {
     return result.error.flatten(); // Error를 깔끔하게 보여줌
   }
-  return prevState;
+
+  // hash password
+  const hashedPassword = await bcrypt.hash(result.data.password, 12);
+
+  // save the suer to db
+  const user = await db.user.create({
+    data: {
+      username: result.data.username,
+      email: result.data.email,
+      password: hashedPassword,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  // log the user in
+  const session = await getIronSession(await cookies(), {
+    cookieName: "delicious-karrot",
+    id: user.id,
+    password: process.env.COOKIE_PASSWORD,
+  } as SessionOptions);
+
+  await session.save();
+
+  // redirect "/home"
+  redirect("/profile");
 };
