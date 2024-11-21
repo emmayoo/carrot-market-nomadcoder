@@ -1,11 +1,10 @@
 "use server";
-import { z } from "zod";
-import db from "@/lib/db";
 import bcrypt from "bcrypt";
+import db from "@/lib/db";
+import getSession from "@/lib/session";
 
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getIronSession, SessionOptions } from "iron-session";
+import { z } from "zod";
 
 import {
   PASSWORD_MIN_LENGTH,
@@ -116,11 +115,8 @@ export const createAccount = async (prevState: any, formData: FormData) => {
   });
 
   // log the user in
-  const session = await getIronSession(await cookies(), {
-    cookieName: "delicious-karrot",
-    id: user.id,
-    password: process.env.COOKIE_PASSWORD,
-  } as SessionOptions);
+  const session = await getSession();
+  session.id = user.id;
 
   await session.save();
 
