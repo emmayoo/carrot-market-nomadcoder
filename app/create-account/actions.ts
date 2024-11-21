@@ -55,22 +55,40 @@ const formSchema = z
       // .toLowerCase()
       // .optional(),
       // .transform((username:string) => username.replace("potato", ""))
-      .refine(checkUsername, "No potato allowed")
-      .refine(checkUsernameUnique, "This username is already taken."),
-    email: z
-      .string()
-      .email()
-      .refine(
-        checkEmailUnique,
-        "There is an account already registered with that email."
-      ),
+      .refine(checkUsername, "No potato allowed"),
+    // .refine(checkUsernameUnique, "This username is already taken."),
+    email: z.string().email(),
+    // .refine(checkEmailUnique, "There is an account already registered with that email."),
     password: z
       .string()
       .min(PASSWORD_MIN_LENGTH)
       .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
     confirm_password: z.string(),
   })
-
+  // zod는 데이터를 검사하고 refinementCtx에 에러를 추가
+  .superRefine(async (data, ctx) => {
+    const { username, email } = data;
+    let result = await checkUsernameUnique(username);
+    if (!result) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["username"],
+        message: "This username is already taken.",
+        fatal: true, // refine 중지
+      });
+      return z.NEVER; // refine 중지
+    }
+    result = await checkEmailUnique(email);
+    if (!result) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["email"],
+        message: "There is an account already registered with that email.",
+        fatal: true,
+      });
+      return z.NEVER;
+    }
+  })
   .refine(checkPasswords, {
     message: "Both passwords should be the same!",
     path: ["confirm_password"], // path 미설정 시, formErrors
