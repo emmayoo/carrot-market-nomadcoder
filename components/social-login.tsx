@@ -2,13 +2,19 @@ import { ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 
 export default function SocialLogin() {
+  const handleGithubRedirect = async () => {
+    const response = await fetch("/github/start");
+    const { url } = await response.json();
+    window.location.href = url;
+  };
+
   return (
     <>
       <div className="w-full h-px bg-neutral-500" />
       <div className="flex flex-col gap-3">
-        <Link
+        <button
           className="primary-btn flex h-10 items-center justify-center gap-2"
-          href="/github/start"
+          onClick={handleGithubRedirect}
         >
           <svg
             className="size-6"
@@ -24,7 +30,7 @@ export default function SocialLogin() {
             ></path>
           </svg>
           <span>Continue with Github</span>
-        </Link>
+        </button>
         <Link
           className="primary-btn flex h-10 items-center justify-center gap-2"
           href="/sms"
