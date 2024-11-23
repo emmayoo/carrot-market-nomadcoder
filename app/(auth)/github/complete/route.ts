@@ -87,14 +87,24 @@ export async function GET(request: NextRequest) {
       id: true,
     },
   });
-
   const newUsername = !usernameExist ? login : login + "_" + github_id;
+
+  const emaileExist = await db.user.findUnique({
+    where: {
+      email: email,
+    },
+    select: {
+      id: true,
+    },
+  });
+  const newEmail = !emaileExist ? email : null;
+
   const newUser = await db.user.create({
     data: {
       username: newUsername,
       github_id: github_id,
       avatar: avatar_url,
-      email: email,
+      email: newEmail,
     },
     select: {
       id: true,
