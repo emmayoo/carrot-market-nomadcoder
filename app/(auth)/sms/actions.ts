@@ -2,7 +2,7 @@
 
 import crypto from "crypto";
 import validator from "validator";
-import twilio from "twilio";
+// import twilio from "twilio";
 import db from "@/lib/db";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -62,6 +62,7 @@ export const smsLogIn = async (prevState: ActionState, formData: FormData) => {
   const token = formData.get("token");
 
   if (!prevState.token) {
+    console.log("here?!!");
     const result = phoneSchema.safeParse(phone);
 
     if (!result.success) {
@@ -74,10 +75,13 @@ export const smsLogIn = async (prevState: ActionState, formData: FormData) => {
           },
         },
       });
+
       const token = await getToken();
+
       await db.sMSToken.create({
         data: {
           token,
+          phone: result.data,
           user: {
             // user가 없다면, 생성함
             connectOrCreate: {
@@ -93,15 +97,15 @@ export const smsLogIn = async (prevState: ActionState, formData: FormData) => {
         },
       });
 
-      const client = twilio(
-        process.env.TWILIO_ACCOUNT_SID,
-        process.env.TWILIO_AUTH_TOKEN
-      );
-      await client.messages.create({
-        body: `Your Karrot verification code is: ${token}`,
-        from: process.env.TWILIO_PHONE_NUMBER!,
-        to: process.env.MY_PHONE_NUMBER!,
-      });
+      // const client = twilio(
+      //   process.env.TWILIO_ACCOUNT_SID,
+      //   process.env.TWILIO_AUTH_TOKEN
+      // );
+      // await client.messages.create({
+      //   body: `Your Karrot verification code is: ${token}`,
+      //   from: process.env.TWILIO_PHONE_NUMBER!,
+      //   to: process.env.MY_PHONE_NUMBER!,
+      // });
 
       return { token: true };
     }
@@ -114,6 +118,7 @@ export const smsLogIn = async (prevState: ActionState, formData: FormData) => {
     const token = await db.sMSToken.findUnique({
       where: {
         token: result.data.toString(),
+        phone: phone?.toString(),
       },
       select: {
         id: true,
