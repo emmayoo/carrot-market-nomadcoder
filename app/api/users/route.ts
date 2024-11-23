@@ -1,3 +1,4 @@
+// Example
 import { NextRequest } from "next/server.js";
 
 export async function GET(request: NextRequest) {
