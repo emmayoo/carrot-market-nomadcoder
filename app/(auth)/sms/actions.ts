@@ -4,9 +4,9 @@ import crypto from "crypto";
 import validator from "validator";
 import twilio from "twilio";
 import db from "@/lib/db";
-import getSession from "@/lib/session";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { saveSession } from "@/lib/session";
 
 interface ActionState {
   token: boolean;
@@ -121,9 +121,7 @@ export const smsLogIn = async (prevState: ActionState, formData: FormData) => {
       },
     });
 
-    const session = await getSession();
-    session.id = token!.userId;
-    await session.save();
+    await saveSession(token!.userId);
 
     await db.sMSToken.delete({
       where: {

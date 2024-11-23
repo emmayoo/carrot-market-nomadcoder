@@ -1,10 +1,10 @@
 "use server";
 import bcrypt from "bcrypt";
 import db from "@/lib/db";
-import getSession from "@/lib/session";
 
 import { redirect } from "next/navigation";
 import { typeToFlattenedError, z } from "zod";
+import { saveSession } from "@/lib/session";
 
 import {
   PASSWORD_MIN_LENGTH,
@@ -141,10 +141,7 @@ export const createAccount = async (
   });
 
   // log the user in
-  const session = await getSession();
-  session.id = user.id;
-
-  await session.save();
+  await saveSession(user.id);
 
   // redirect "/home"
   redirect("/profile");

@@ -1,6 +1,5 @@
-import getSession from "./lib/session";
-
 import { NextRequest, NextResponse } from "next/server";
+import { getSession } from "./lib/session";
 
 interface Routes {
   [key: string]: boolean;

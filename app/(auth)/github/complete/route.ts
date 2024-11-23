@@ -1,8 +1,8 @@
 import db from "@/lib/db";
-import getSession from "@/lib/session";
 
 import { NextRequest } from "next/server";
 import { redirect } from "next/navigation";
+import { saveSession } from "@/lib/session";
 
 const getAccessToken = async (code: string) => {
   const accessTokenParams = new URLSearchParams({
@@ -72,9 +72,8 @@ export async function GET(request: NextRequest) {
   });
 
   if (user) {
-    const session = await getSession();
-    session.id = user.id;
-    await session.save();
+    await saveSession(user.id);
+
     return redirect("/profile");
   }
 
@@ -102,9 +101,7 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  const session = await getSession();
-  session.id = newUser.id;
-  await session.save();
+  await saveSession(newUser.id);
 
   return redirect("/profile");
 }

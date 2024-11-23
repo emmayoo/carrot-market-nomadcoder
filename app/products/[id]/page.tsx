@@ -1,11 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import db from "@/lib/db";
-import getSession from "@/lib/session";
 
 import { notFound, redirect } from "next/navigation";
 import { UserIcon } from "@heroicons/react/16/solid";
 import { formatToWon } from "@/lib/utils";
+import { getSession } from "@/lib/session";
 
 const checkOwner = async (userId: number) => {
   const session = await getSession();

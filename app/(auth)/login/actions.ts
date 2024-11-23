@@ -2,7 +2,7 @@
 
 import bcrypt from "bcrypt";
 import db from "@/lib/db";
-import getSession from "@/lib/session";
+import { saveSession } from "@/lib/session";
 
 import { typeToFlattenedError, z } from "zod";
 import { redirect } from "next/navigation";
@@ -64,9 +64,7 @@ export async function logIn(prevState: StateType | null, formData: FormData) {
 
   // log the user in
   if (ok) {
-    const session = await getSession();
-    session.id = user!.id;
-    await session.save();
+    await saveSession(user!.id);
 
     redirect("/profile");
   } else {
