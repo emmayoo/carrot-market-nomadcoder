@@ -1,18 +1,22 @@
-"use client"; // for preview
+"use client";
 
 import Input from "@/components/input";
 import Button from "@/components/button";
 
-import { useActionState, useEffect, useState } from "react";
+import { /*useActionState,*/ useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { PhotoIcon } from "@heroicons/react/24/solid";
-import { StateType, getUploadUrl, uploadProduct } from "./actions";
+import { /*getUploadUrl,*/ uploadProduct } from "./actions";
 import {
   ACCEPTED_IMAGE_MIME_TYPES,
   MAX_IMAGE_SIZE,
   IMAGE_TYPE_ERROR,
   IMAGE_SIZE_ERROR,
 } from "@/lib/constants";
+import { FormType, productSchema, StateType } from "./schema";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const validateFile = (file: File) => {
   if (!ACCEPTED_IMAGE_MIME_TYPES.includes(file.type))
     return alert(IMAGE_TYPE_ERROR);
@@ -22,7 +26,9 @@ const validateFile = (file: File) => {
 
 export default function AddProduct() {
   const [preview, setPreview] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [uploadUrl, setUploadUrl] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [imageId, setImageId] = useState("");
 
   const onImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,15 +41,19 @@ export default function AddProduct() {
     const file = files[0];
 
     if (validateFile(file)) {
-      const url = URL.createObjectURL(file as Blob);
+      const b = new Blob([file], { type: file.type });
+      const url = URL.createObjectURL(b);
       setPreview(url);
+      setValue("photo", file);
+      clearErrors("photo");
 
-      const { success, result } = await getUploadUrl();
-      if (success) {
-        const { id, uploadUrl } = result;
-        setImageId(id);
-        setUploadUrl(uploadUrl);
-      }
+      // cloudflare
+      // const { success, result } = await getUploadUrl();
+      // if (success) {
+      //   const { id, uploadUrl } = result;
+      //   setImageId(id);
+      //   setUploadUrl(uploadUrl);
+      // }
     }
   };
 
@@ -79,17 +89,55 @@ export default function AddProduct() {
     return uploadProduct(_, formData);
   };
 
-  const [state, action] = useActionState(uploadProduct, null);
+  // fs 사용 (rhf 미사용)
+  // const [state, action] = useActionState(uploadProduct, null);
+  // cloudflare 사용 (rhf 미사용)
   // const [state, action] = useActionState(interceptAction, null);
+
+  // rhf 사용
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    setError,
+    clearErrors,
+  } = useForm<FormType>({
+    resolver: zodResolver(productSchema),
+    mode: "onSubmit",
+    reValidateMode: "onChange",
+  });
+
+  const onSubmit = handleSubmit(async (data: FormType) => {
+    const formData = new FormData();
+    formData.append("photo", data.photo);
+    formData.append("title", data.title);
+    formData.append("price", data.price + "");
+    formData.append("description", data.description);
+    const { fieldErrors } = await uploadProduct(null, formData);
+
+    if (fieldErrors["title"])
+      setError("title", { message: fieldErrors["title"][0] });
+    if (fieldErrors["price"])
+      setError("price", { message: fieldErrors["price"][0] });
+    if (fieldErrors["description"])
+      setError("description", { message: fieldErrors["description"][0] });
+    if (fieldErrors["photo"])
+      setError("photo", { message: fieldErrors["photo"][0] });
+  });
+
+  const onValid = async () => {
+    await onSubmit();
+  };
 
   return (
     <div>
-      <form action={action} className="p-5 flex flex-col gap-5">
+      <form action={onValid} className="p-5 flex flex-col gap-5">
         <label
           htmlFor="photo"
           className="border-2 aspect-square flex items-center justify-center flex-col text-neutral-300 border-neutral-300 rounded-md border-dashed cursor-pointer bg-center bg-cover"
           style={{
-            backgroundImage: `url(${state?.fieldErrors.photo ? "" : preview})`,
+            backgroundImage: errors.photo ? "" : `url(${preview})`,
           }}
         >
           {preview === "" ? (
@@ -97,7 +145,7 @@ export default function AddProduct() {
               <PhotoIcon className="w-20" />
               <div className="text-neutral-400 text-sm">
                 사진을 추가해주세요. (파일 최대 크기: 4MB)
-                {state?.fieldErrors.photo}
+                {errors.photo?.message}
               </div>
             </>
           ) : null}
@@ -111,25 +159,25 @@ export default function AddProduct() {
           className="hidden"
         />
         <Input
-          name="title"
+          {...register("title")}
           required
           placeholder="제목"
           type="text"
-          errors={state?.fieldErrors.title}
+          errors={[errors.title?.message ?? ""]}
         />
         <Input
-          name="price"
+          {...register("price")}
           type="number"
           required
           placeholder="가격"
-          errors={state?.fieldErrors.price}
+          errors={[errors.price?.message ?? ""]}
         />
         <Input
-          name="description"
+          {...register("description")}
           type="text"
           required
           placeholder="자세한 설명"
-          errors={state?.fieldErrors.description}
+          errors={[errors.description?.message ?? ""]}
         />
         <Button text="작성 완료" />
       </form>

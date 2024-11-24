@@ -3,42 +3,9 @@
 import fs from "fs/promises";
 import db from "@/lib/db";
 
-import { typeToFlattenedError, z } from "zod";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
-import {
-  MAX_IMAGE_SIZE,
-  ACCEPTED_IMAGE_MIME_TYPES,
-  IMAGE_TYPE_ERROR,
-  IMAGE_SIZE_ERROR,
-} from "@/lib/constants";
-
-const productSchema = z.object({
-  photo: z
-    .instanceof(File, { message: "Please select an image file." })
-    .refine((file) => file.size <= MAX_IMAGE_SIZE, {
-      message: IMAGE_SIZE_ERROR,
-    })
-    .refine((file) => ACCEPTED_IMAGE_MIME_TYPES.includes(file.type), {
-      message: IMAGE_TYPE_ERROR,
-    }),
-  title: z.string({
-    required_error: "Title is required",
-  }),
-  description: z.string({
-    required_error: "Description is required",
-  }),
-  price: z.coerce.number({
-    required_error: "Price is required",
-  }),
-});
-
-export type StateType = {
-  fieldErrors?: typeToFlattenedError<
-    z.infer<typeof productSchema>,
-    string
-  >["fieldErrors"];
-};
+import { productSchema, StateType } from "./schema";
 
 export async function uploadProduct(
   prevState: StateType | null,
@@ -50,6 +17,7 @@ export async function uploadProduct(
     price: formData.get("price"),
     description: formData.get("description"),
   };
+  console.log("back", data);
 
   const result = productSchema.safeParse(data);
   if (!result.success) {
