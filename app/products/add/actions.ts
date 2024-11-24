@@ -33,7 +33,7 @@ const productSchema = z.object({
   }),
 });
 
-type StateType = {
+export type StateType = {
   fieldErrors?: typeToFlattenedError<
     z.infer<typeof productSchema>,
     string
@@ -56,6 +56,7 @@ export async function uploadProduct(
     return result.error.flatten();
   }
 
+  // cloudflar 사용 시, 삭제 필요
   const photoData = await result.data.photo.arrayBuffer();
   await fs.appendFile(
     `./public/${result.data.photo.name}`,
@@ -85,4 +86,18 @@ export async function uploadProduct(
     redirect(`/products/${product.id}`);
   }
   notFound();
+}
+
+export async function getUploadUrl() {
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/images/v2/direct_upload`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.CLOUDFLARE_API_KEY}`,
+      },
+    }
+  );
+  const data = await response.json();
+  return data;
 }

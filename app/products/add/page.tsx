@@ -5,7 +5,7 @@ import Button from "@/components/button";
 
 import { useActionState, useEffect, useState } from "react";
 import { PhotoIcon } from "@heroicons/react/24/solid";
-import { uploadProduct } from "./actions";
+import { StateType, getUploadUrl, uploadProduct } from "./actions";
 import {
   ACCEPTED_IMAGE_MIME_TYPES,
   MAX_IMAGE_SIZE,
@@ -22,7 +22,10 @@ const validateFile = (file: File) => {
 
 export default function AddProduct() {
   const [preview, setPreview] = useState("");
-  const onImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const [uploadUrl, setUploadUrl] = useState("");
+  const [imageId, setImageId] = useState("");
+
+  const onImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: { files },
     } = event;
@@ -34,6 +37,13 @@ export default function AddProduct() {
     if (validateFile(file)) {
       const url = URL.createObjectURL(file as Blob);
       setPreview(url);
+
+      const { success, result } = await getUploadUrl();
+      if (success) {
+        const { id, uploadUrl } = result;
+        setImageId(id);
+        setUploadUrl(uploadUrl);
+      }
     }
   };
 
@@ -41,7 +51,36 @@ export default function AddProduct() {
     return () => URL.revokeObjectURL(preview);
   });
 
+  // cloudflare를 사용한 이미지 업로드
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const interceptAction = async (_: StateType | null, formData: FormData) => {
+    // 1. upload image to cloudflare
+    const file = formData.get("photo");
+    if (!file) {
+      return null;
+    }
+    const cloudflareForm = new FormData();
+    cloudflareForm.append("file", file);
+    const response = await fetch(uploadUrl, {
+      method: "post",
+      body: cloudflareForm,
+    });
+    console.log(await response.text());
+    if (response.status !== 200) {
+      return null;
+    }
+    const photoUrl = `https://imagedelivery.net/aSbksvJjax-AUC7qVnaC4A/${imageId}`;
+
+    // 2. replace 'photo' in formData
+    formData.set("photo", photoUrl);
+
+    // 3. call upload product
+    // 이 경우 photo는 string (by. 2번 과정) => zod 수정하기
+    return uploadProduct(_, formData);
+  };
+
   const [state, action] = useActionState(uploadProduct, null);
+  // const [state, action] = useActionState(interceptAction, null);
 
   return (
     <div>
@@ -50,7 +89,7 @@ export default function AddProduct() {
           htmlFor="photo"
           className="border-2 aspect-square flex items-center justify-center flex-col text-neutral-300 border-neutral-300 rounded-md border-dashed cursor-pointer bg-center bg-cover"
           style={{
-            backgroundImage: `url(${preview})`,
+            backgroundImage: `url(${state?.fieldErrors.photo ? "" : preview})`,
           }}
         >
           {preview === "" ? (
