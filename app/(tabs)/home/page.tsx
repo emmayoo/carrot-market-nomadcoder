@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { PlusIcon } from "@heroicons/react/16/solid";
 
 const getInitialProducts = async () => {
+  "use cache";
   const products = await db.product.findMany({
     select: {
       id: true,
@@ -14,7 +15,6 @@ const getInitialProducts = async () => {
       photo: true,
       created_at: true,
     },
-    take: 1,
     orderBy: {
       created_at: "desc",
     },

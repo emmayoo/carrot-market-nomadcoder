@@ -1,6 +1,8 @@
-import { formatToTimeAge, formatToWon } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+
+import { connection } from "next/server";
+import { formatToTimeAge, formatToWon } from "@/lib/utils";
 
 interface ListProductProps {
   id: number;
@@ -10,13 +12,15 @@ interface ListProductProps {
   created_at: Date;
 }
 
-export default function ListProduct({
+export default async function ListProduct({
   id,
   title,
   price,
   photo,
   created_at,
 }: ListProductProps) {
+  await connection();
+
   return (
     <Link href={`/products/${id}`} className="flex gap-5">
       <div className="relative size-28 rounded-md overflow-hidden">
