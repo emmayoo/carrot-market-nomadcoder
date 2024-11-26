@@ -22,3 +22,14 @@ export default async function ProductDetail({
   const product = await getProductDetail(id);
   return <ProductDetailContent product={product} />;
 }
+
+// getSession 부분 주석 처리하기!
+// export async function generateStaticParams() {
+//   const products = await db.product.findMany({
+//     select: {
+//       id: true,
+//     },
+//   });
+//   return products.map((product) => ({ id: product.id + "" }));
+//   // return [{id:"4"}]
+// }
