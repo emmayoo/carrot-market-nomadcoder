@@ -7,6 +7,7 @@ import { EyeIcon } from "@heroicons/react/24/solid";
 import { getSession } from "@/lib/session";
 import { formatToTimeAgo } from "@/lib/utils";
 import LikeButton from "@/components/like-button";
+import PostComments from "@/components/post-comments";
 
 async function getPost(id: number) {
   try {
@@ -67,6 +68,33 @@ const getCachedLikeStatus = (postId: number, userId: number) => {
   return cachedOperation(postId, userId);
 };
 
+const getComments = async (postId: number) => {
+  const comments = await db.comment.findMany({
+    where: {
+      postId,
+    },
+    include: {
+      user: {
+        select: {
+          username: true,
+          avatar: true,
+        },
+      },
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+  return comments;
+};
+
+const getCachedComments = (postId: number) => {
+  const cachedOperation = nextCache(getComments, ["post-comments"], {
+    tags: [`post-comments-${postId}`],
+  });
+  return cachedOperation(postId);
+};
+
 export default async function PostDetail({
   params,
 }: {
@@ -85,6 +113,9 @@ export default async function PostDetail({
   const session = await getSession();
 
   const { likeCount, isLiked } = await getCachedLikeStatus(id, session.id!);
+
+  const comments = await getCachedComments(id);
+
   return (
     <div className="p-5 text-white">
       <div className="flex items-center gap-2 mb-2">
@@ -111,6 +142,16 @@ export default async function PostDetail({
         </div>
         <LikeButton postId={id} isLiked={isLiked} likeCount={likeCount} />
       </div>
+
+      <PostComments
+        comments={comments}
+        postId={id}
+        user={{
+          id: session.id!,
+          avatar: post.user.avatar!,
+          username: post.user.username,
+        }}
+      />
     </div>
   );
 }
