@@ -17,7 +17,6 @@ export async function uploadProduct(
     price: formData.get("price"),
     description: formData.get("description"),
   };
-  console.log("back", data);
 
   const result = productSchema.safeParse(data);
   if (!result.success) {

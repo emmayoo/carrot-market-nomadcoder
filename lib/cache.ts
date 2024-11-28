@@ -15,7 +15,6 @@ export function getCachedData<T, A extends unknown[]>(
   key: string[],
   tags: string[] = []
 ) {
-  console.log(cb, key, tags);
   // 래퍼 함수 생성
   return async (...args: A): Promise<T> => {
     const cacheKey = JSON.stringify(key);

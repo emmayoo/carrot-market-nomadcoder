@@ -89,7 +89,6 @@ export async function updateComment(
     comment: formData.get("comment"),
   };
   const result = await formSchema.spa(data);
-  console.log(result);
 
   if (!result.success) {
     return result.error.flatten();
