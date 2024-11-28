@@ -1,4 +1,4 @@
-export const formatToTimeAge = (date: Date) => {
+export const formatToTimeAgo = (date: Date) => {
   const dayInMs = 1000 * 60 * 60 * 24;
 
   const time = date.getTime();
