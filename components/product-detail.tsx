@@ -63,12 +63,20 @@ export default function ProductDetailContent({
           {formatToWon(product.price)}원
         </span>
         {product.is_owner ? (
-          <button
-            onClick={() => deleteProduct(product.id)}
-            className="bg-red-500 px-5 py-2.5 rounded-md text-white font-semibold"
-          >
-            Delete product
-          </button>
+          <>
+            <button
+              onClick={() => deleteProduct(product.id)}
+              className="bg-red-500 px-5 py-2.5 rounded-md text-white font-semibold"
+            >
+              Delete product
+            </button>
+            <Link
+              href={`/product/edit/${product.id}`}
+              className="bg-green-500 px-5 py-2.5 rounded-md text-white font-semibold"
+            >
+              Edit product
+            </Link>
+          </>
         ) : null}
         <Link
           className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold"
