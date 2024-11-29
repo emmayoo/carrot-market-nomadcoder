@@ -11,3 +11,11 @@ export const formatToTimeAgo = (date: Date) => {
 export const formatToWon = (price: number) => {
   return price.toLocaleString("ko-KR");
 };
+
+export const truncateString = (text: string, limit = 20) => {
+  if (text.length > limit) {
+    return text.slice(0, limit) + "...";
+  }
+
+  return text;
+};
