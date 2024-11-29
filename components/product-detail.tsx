@@ -9,7 +9,7 @@ import { formatToWon } from "@/lib/utils";
 import { deleteProduct } from "@/app/products/[id]/actions";
 
 interface ProductDetailContentProp {
-  product: ProductWithUser & { is_owner: boolean };
+  product: ProductWithUser & { is_owner: boolean; chatroom_id: string };
 }
 
 type ProductWithUser = Prisma.ProductGetPayload<{
@@ -78,12 +78,14 @@ export default function ProductDetailContent({
             </Link>
           </>
         ) : null}
-        <Link
-          className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold"
-          href={``}
-        >
-          채팅하기
-        </Link>
+        {
+          <Link
+            className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold"
+            href={`/chats/${product.chatroom_id}`}
+          >
+            채팅하기
+          </Link>
+        }
       </div>
     </div>
   );
