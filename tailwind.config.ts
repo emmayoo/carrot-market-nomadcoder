@@ -8,6 +8,11 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        roboto: "var(--roboto-font)",
+        rubick: "var(--rubik-font)",
+        andina: "var(--andina-font)",
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
