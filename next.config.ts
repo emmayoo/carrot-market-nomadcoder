@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
+    taint: true,
     serverActions: {
       bodySizeLimit: "4mb",
     },
