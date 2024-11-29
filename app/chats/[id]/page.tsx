@@ -66,6 +66,18 @@ async function getUserProfile() {
   return user;
 }
 
+const deleteUnreadMessages = async (chatRoomId: string) => {
+  const session = await getSession();
+  await db.unReadMessages.deleteMany({
+    where: {
+      userId: session.id,
+      message: {
+        chatRoomId,
+      },
+    },
+  });
+};
+
 export default async function ChatRoom({
   params,
 }: {
@@ -84,6 +96,8 @@ export default async function ChatRoom({
   if (!user) {
     return notFound();
   }
+
+  await deleteUnreadMessages(roomId);
 
   return (
     <ChatMessagesList

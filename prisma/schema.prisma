@@ -8,22 +8,23 @@ datasource db {
 }
 
 model User {
-  id         Int        @id @default(autoincrement())
-  username   String     @unique
-  email      String?    @unique
-  password   String?
-  phone      String?    @unique
-  github_id  String?    @unique
-  avatar     String? // @default("https://img")
-  created_at DateTime   @default(now())
-  updated_at DateTime   @updatedAt
-  tokens     SMSToken[]
-  products   Product[]
-  posts      Post[]
-  comments   Comment[]
-  likes      Like[]
-  chat_rooms ChatRoom[]
-  messages   Message[]
+  id             Int              @id @default(autoincrement())
+  username       String           @unique
+  email          String?          @unique
+  password       String?
+  phone          String?          @unique
+  github_id      String?          @unique
+  avatar         String? // @default("https://img")
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @updatedAt
+  tokens         SMSToken[]
+  products       Product[]
+  posts          Post[]
+  comments       Comment[]
+  likes          Like[]
+  chat_rooms     ChatRoom[]
+  messages       Message[]
+  unReadMessages UnReadMessages[]
 }
 
 model SMSToken {
@@ -104,8 +105,19 @@ model Message {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  room       ChatRoom @relation(fields: [chatRoomId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
-  chatRoomId String
-  userId     Int
+  room           ChatRoom         @relation(fields: [chatRoomId], references: [id])
+  user           User             @relation(fields: [userId], references: [id])
+  chatRoomId     String
+  userId         Int
+  unReadMessages UnReadMessages[]
+}
+
+model UnReadMessages {
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messageId Int     @id
+  userId    Int
 }
